@@ -2,14 +2,18 @@ using microblogApi.Models;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace microblogApi.Controllers {
     [Route("/api/[controller]")]
     public class UsersController : ControllerBase{
-        MicropostContext Db;
-        public UsersController(MicropostContext context)
+        readonly MicropostContext Db;
+        readonly UserManager<User> UserManager;
+        public UsersController(MicropostContext context, UserManager<User> userManager)
         {
             Db = context;
+            UserManager = userManager;
         }
 
         [HttpGet]
@@ -27,17 +31,17 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] User user) {
+        public IActionResult Create([FromBody]PersonResponse person) {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            if (Db.Users.Any(u => u.Email == user.Email))
-                return BadRequest("Email must be unique");
-            
-            Db.Users.Add(user);
-            Db.SaveChanges();
 
-            return Created("", user);
+            var user = new User { UserName = person.username, Email = person.email };
+            var result = UserManager.CreateAsync(user, person.password).Result;
+            if (result.Succeeded) {
+                return Created("", user);
+            } else {
+                return BadRequest(result.Errors);
+            }
         }
 
         [HttpDelete("{id}")]
@@ -50,6 +54,16 @@ namespace microblogApi.Controllers {
             Db.SaveChanges();
 
             return Ok(user);
+        }
+
+        public class PersonResponse
+        {
+            [Required]
+            public string username {get; set;}
+            [Required]
+            public string email {get; set;}
+            [Required]
+            public string password {get;set;}
         }
     }
 }
