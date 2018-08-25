@@ -1,4 +1,4 @@
-using microblogApi.Model;
+using microblogApi.Models;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

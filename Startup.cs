@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using microblogApi.Model;
+using microblogApi.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace microblogApi
 {
@@ -18,6 +19,11 @@ namespace microblogApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MicropostContext>(opt => opt.UseSqlite("Data Source=data.db"));
+
+            services.AddIdentity<User, Role>()
+                .AddEntityFrameworkStores<MicropostContext>()
+                .AddDefaultTokenProviders();
+
             services.AddMvc();
         }
 
