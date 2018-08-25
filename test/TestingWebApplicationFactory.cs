@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace microblogApi.Test {
     public class TestingWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
@@ -33,9 +34,15 @@ namespace microblogApi.Test {
                 {
                     var scopedServices = scope.ServiceProvider;
                     var db = scopedServices.GetRequiredService<MicropostContext>();
+                    var userMan = scopedServices.GetRequiredService<UserManager<User>>();
 
                     // Ensure the database is created.
-                    var result = db.Database.EnsureCreated();
+                    db.Database.EnsureCreated();
+                    for (int i = 0; i < 4; i++) {
+                        var result = userMan.CreateAsync(new User {UserName = $"User{i}", Email = $"user{0}@example.org"}, "Fo0b@r");
+                        if (!result.Result.Succeeded)
+                            throw new Exception("Couldn't create seed user");
+                    }
                 }
             });
         }

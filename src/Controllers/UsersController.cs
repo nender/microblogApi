@@ -74,9 +74,11 @@ namespace microblogApi.Controllers {
     public class UserBindingModel
     {
         [Required]
+        [StringLength(50, MinimumLength = 5)]
         public string username { get; set; }
 
         [Required]
+        [EmailAddress]
         public string email { get; set; }
 
         [Required]
