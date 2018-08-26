@@ -34,7 +34,7 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]UserRequest person) {
+        public async Task<IActionResult> Create([FromBody]CreateUserRequest person) {
             var user = new User { UserName = person.username, Email = person.email };
 
             if (!TryValidateModel(user))
@@ -48,7 +48,7 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(long id, [FromBody]UserRequest postData) {
+        public async Task<IActionResult> Update(long id, [FromBody]UpdateUserRequest postData) {
             var user = Db.Users.Find(id);
             if (user == null)
                 return NotFound();
@@ -105,12 +105,24 @@ namespace microblogApi.Controllers {
         public string password { get; set; }
     }
 
-    public class UserRequest
+    public class UpdateUserRequest
     {
         public string username { get; set; }
 
         public string email { get; set; }
 
+        public string password { get; set; }
+    }
+
+    public class CreateUserRequest
+    {
+        [Required]
+        public string username { get; set; }
+
+        [Required]
+        public string email { get; set; }
+
+        [Required]
         public string password { get; set; }
     }
 }

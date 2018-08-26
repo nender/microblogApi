@@ -26,6 +26,8 @@ namespace microblogApi.Models {
             ThrowIfDisposed();
             if (user == null)
                 throw new ArgumentNullException(nameof(user));
+            if (newPassword == null)
+                throw new ArgumentNullException(nameof(newPassword));
 
             var result = await UpdatePasswordHash(user, newPassword, validatePassword: true);
             if (!result.Succeeded)
