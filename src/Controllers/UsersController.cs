@@ -35,11 +35,34 @@ namespace microblogApi.Controllers {
         [HttpPost]
         public IActionResult Create([FromBody]UserBindingModel person) {
             var user = new User { UserName = person.username, Email = person.email };
+
+            if (!TryValidateModel(user))
+                return BadRequest(ModelState);
+
             var result = UserManager.CreateAsync(user, person.password).Result;
             if (result.Succeeded)
                 return Created("", user.ToViewModel());
             else
                 return BadRequest(result.Errors);
+        }
+
+        [HttpPatch("{id}")]
+        public IActionResult Update(long id, [FromBody]UserBindingModel person) {
+            var existing = Db.Users.Find(id);
+            if (existing == null)
+                return NotFound();
+
+            existing.UserName = person.username ?? existing.UserName;
+            existing.Email = person.email ?? existing.Email;
+            TryValidateModel(existing);
+            if (ModelState.IsValid) {
+                Db.SaveChanges();
+                return Ok();
+            } else {
+                return BadRequest(ModelState);
+            }
+
+            // TODO: allow password update here
         }
 
         [HttpDelete("{id}")]
@@ -73,15 +96,10 @@ namespace microblogApi.Controllers {
 
     public class UserBindingModel
     {
-        [Required]
-        [StringLength(50, MinimumLength = 5)]
         public string username { get; set; }
 
-        [Required]
-        [EmailAddress]
         public string email { get; set; }
 
-        [Required]
         public string password { get; set; }
     }
 }
