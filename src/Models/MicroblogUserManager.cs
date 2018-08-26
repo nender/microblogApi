@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,5 +20,9 @@ namespace microblogApi.Models {
             ILogger<UserManager<User>> logger
         ): base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
         {}
+
+        public Task<IdentityResult> ChangePasswordAsync(User user, string newPassword) {
+            throw new NotImplementedException();
+        }
     }
 }

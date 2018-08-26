@@ -56,16 +56,22 @@ namespace microblogApi.Test.Integration {
             Assert.False(response.IsSuccessStatusCode);
         }
 
-        [Fact]
-        public async void TestUpdateUserValid() {
+        [Theory]
+        [InlineData("{'username':'better'}")]
+        [InlineData("{'email':'new@email.org'}")]
+        [InlineData("{'password':'Fo0B@r2'}")]
+        public async void TestUpdateUserValid(string json) {
+            var id = UserFixtures.Betty.Id;
+            var endpoint = $"/api/users/{id}";
             var client = _factory.CreateDefaultClient();
-            var betty = UserFixtures.Betty;
-            var content = JsonContent("{'username':'better'}");
-            var response = await client.PatchAsync($"/api/users/{betty.Id}", content);
+
+            var response = await client.PatchAsync(endpoint, JsonContent(json));
             Assert.True(response.IsSuccessStatusCode);
-            response = await client.GetAsync($"/api/users/{betty.Id}");
-            var json = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-            Assert.True("better" == (string)json["username"]);
+            response = await client.GetAsync(endpoint);
+
+            var change = JObject.Parse(json).Properties().First();
+            var result = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+            Assert.True(result.Property(change.Name).Value.ToString() == (string)change.Value);
         }
 
         [Theory]
