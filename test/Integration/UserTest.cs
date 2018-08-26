@@ -10,8 +10,8 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace microblogApi.Test.Integration {
-    public class UserTests : IClassFixture<TestingWebApplicationFactory<microblogApi.Startup>> {
-        readonly TestingWebApplicationFactory<microblogApi.Startup> _factory;
+    public class UserTests : IClassFixture<MicroblogWebApplicationFactory> {
+        readonly MicroblogWebApplicationFactory _factory;
         static Regex idfinder = new Regex(@".*id['""]\s*?:\s*?['""](\d+)");
 
         static StringContent JsonContent(string body)
@@ -19,7 +19,7 @@ namespace microblogApi.Test.Integration {
 
         string GetFirstId(string str) => idfinder.Match(str).Groups[0].Value;
 
-        public UserTests(TestingWebApplicationFactory<microblogApi.Startup> factory) {
+        public UserTests(MicroblogWebApplicationFactory factory) {
             _factory = factory;
         }
 

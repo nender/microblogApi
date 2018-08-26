@@ -12,8 +12,8 @@ namespace microblogApi.Controllers {
     [ApiController]
     public class UsersController : ControllerBase {
         readonly MicropostContext Db;
-        readonly UserManager<User> UserManager;
-        public UsersController(MicropostContext context, UserManager<User> userManager) {
+        readonly MicroblogUserManager UserManager;
+        public UsersController(MicropostContext context, MicroblogUserManager userManager) {
             Db = context;
             UserManager = userManager;
         }

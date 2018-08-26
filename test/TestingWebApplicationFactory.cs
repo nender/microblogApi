@@ -12,10 +12,9 @@ using microblogApi.Models;
 using microblogApi.Test.Data;
 
 namespace microblogApi.Test {
-    public class TestingWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
-            where TStartup : class
+    public class MicroblogWebApplicationFactory : WebApplicationFactory<Startup>
     {
-        public TestingWebApplicationFactory() { }
+        public MicroblogWebApplicationFactory() { }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -27,11 +26,7 @@ namespace microblogApi.Test {
 
                 services.AddDbContext<MicropostContext>(opt => opt.UseSqlite($"Data Source={testdb}"));
 
-                services.AddIdentity<User, Role>()
-                    .AddEntityFrameworkStores<MicropostContext>()
-                    .AddDefaultTokenProviders();
-
-                services.AddMvc();
+                Startup.ConfigureServices(services);
 
                 using (var scope = services.BuildServiceProvider().CreateScope())
                 {

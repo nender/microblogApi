@@ -16,13 +16,16 @@ namespace microblogApi
     {
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
+        public static void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MicropostContext>(opt => opt.UseSqlite("Data Source=data.db"));
 
+            services.AddScoped<MicroblogUserManager>();
+            services.AddScoped<UserManager<User>, MicroblogUserManager>();
+
             services.AddIdentity<User, Role>()
-                .AddEntityFrameworkStores<MicropostContext>()
-                .AddDefaultTokenProviders();
+                    .AddEntityFrameworkStores<MicropostContext>()
+                    .AddDefaultTokenProviders();
 
             services.AddMvc();
         }
