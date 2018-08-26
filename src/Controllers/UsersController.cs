@@ -47,22 +47,27 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPatch("{id}")]
-        public IActionResult Update(long id, [FromBody]UserBindingModel person) {
-            var existing = Db.Users.Find(id);
-            if (existing == null)
+        public IActionResult Update(long id, [FromBody]UserBindingModel postData) {
+            var user = Db.Users.Find(id);
+            if (user == null)
                 return NotFound();
 
-            existing.UserName = person.username ?? existing.UserName;
-            existing.Email = person.email ?? existing.Email;
-            TryValidateModel(existing);
-            if (ModelState.IsValid) {
+            user.UserName = postData.username ?? user.UserName;
+            user.Email = postData.email ?? user.Email;
+            TryValidateModel(user);
+
+            IdentityResult pwChangeResult = null;
+            if (postData.password != null) {
+                pwChangeResult = UserManager.ChangePasswordAsync(user, postData.password).Result;
+            }
+
+            bool pwChangeError = pwChangeResult?.Errors.Any() ?? false;
+            if (ModelState.IsValid && !pwChangeError) {
                 Db.SaveChanges();
                 return Ok();
             } else {
                 return BadRequest(ModelState);
             }
-
-            // TODO: allow password update here
         }
 
         [HttpDelete("{id}")]

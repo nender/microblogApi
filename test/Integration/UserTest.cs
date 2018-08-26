@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -72,6 +73,11 @@ namespace microblogApi.Test.Integration {
             var change = JObject.Parse(json).Properties().First();
             var result = JObject.Parse(response.Content.ReadAsStringAsync().Result);
             Assert.True(result.Property(change.Name).Value.ToString() == (string)change.Value);
+        }
+
+        [Fact]
+        public void TestUpdateUserPassword() {
+            throw new NotImplementedException();
         }
 
         [Theory]
