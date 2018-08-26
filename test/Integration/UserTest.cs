@@ -30,7 +30,7 @@ namespace microblogApi.Test.Integration {
             var client = _factory.CreateDefaultClient();
             var response = await client.PostAsJsonAsync("/api/users", x);
             Assert.True(response.IsSuccessStatusCode);
-            var id = GetFirstId(response.Content.ReadAsStringAsync().Result);
+            var id = GetFirstId(await response.Content.ReadAsStringAsync());
             response = await client.DeleteAsync($"/api/users/{id}");
             Assert.True(response.IsSuccessStatusCode);
         }
@@ -60,7 +60,6 @@ namespace microblogApi.Test.Integration {
         [Theory]
         [InlineData("{'username':'better'}")]
         [InlineData("{'email':'new@email.org'}")]
-        [InlineData("{'password':'Fo0B@r2'}")]
         public async void TestUpdateUserValid(string json) {
             var id = UserFixtures.Betty.Id;
             var endpoint = $"/api/users/{id}";
@@ -71,7 +70,7 @@ namespace microblogApi.Test.Integration {
             response = await client.GetAsync(endpoint);
 
             var change = JObject.Parse(json).Properties().First();
-            var result = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+            var result = JObject.Parse(await response.Content.ReadAsStringAsync());
             Assert.True(result.Property(change.Name).Value.ToString() == (string)change.Value);
         }
 
@@ -97,7 +96,7 @@ namespace microblogApi.Test.Integration {
             var client = _factory.CreateDefaultClient();
             var response = await client.GetAsync("/api/users");
             Assert.True(response.IsSuccessStatusCode);
-            var id = GetFirstId(response.Content.ReadAsStringAsync().Result);
+            var id = GetFirstId(await response.Content.ReadAsStringAsync());
             response = await client.GetAsync($"/api/users{id}");
             Assert.True(response.IsSuccessStatusCode);
         }

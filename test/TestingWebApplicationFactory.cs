@@ -18,7 +18,7 @@ namespace microblogApi.Test {
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.ConfigureServices(services =>
+            builder.ConfigureServices(async services =>
             {
                 const string testdb = "test.db";
                 if (File.Exists(testdb))
@@ -37,8 +37,8 @@ namespace microblogApi.Test {
                     // Ensure the database is created.
                     db.Database.EnsureCreated();
                     foreach (var user in UserFixtures.Users) {
-                        var result = userMan.CreateAsync(user, "Fo0b@r");
-                        if (!result.Result.Succeeded)
+                        var result = await userMan.CreateAsync(user, "Fo0b@r");
+                        if (!result.Succeeded)
                             throw new Exception("Couldn't create seed user");
                     }
                 }
