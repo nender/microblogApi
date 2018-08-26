@@ -1,12 +1,15 @@
-using microblogApi.Models;
+using System;
 using System.IO;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
+
+using microblogApi.Models;
+using microblogApi.Test.Data;
 
 namespace microblogApi.Test {
     public class TestingWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
@@ -38,8 +41,8 @@ namespace microblogApi.Test {
 
                     // Ensure the database is created.
                     db.Database.EnsureCreated();
-                    for (int i = 0; i < 4; i++) {
-                        var result = userMan.CreateAsync(new User {UserName = $"User{i}", Email = $"user{0}@example.org"}, "Fo0b@r");
+                    foreach (var user in UserFixtures.Users) {
+                        var result = userMan.CreateAsync(user, "Fo0b@r");
                         if (!result.Result.Succeeded)
                             throw new Exception("Couldn't create seed user");
                     }
