@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 namespace microblogApi.Controllers {
 
@@ -33,13 +34,13 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody]UserBindingModel person) {
+        public async Task<IActionResult> Create([FromBody]UserRequest person) {
             var user = new User { UserName = person.username, Email = person.email };
 
             if (!TryValidateModel(user))
                 return BadRequest(ModelState);
 
-            var result = UserManager.CreateAsync(user, person.password).Result;
+            var result = await UserManager.CreateAsync(user, person.password);
             if (result.Succeeded)
                 return Created("", user.ToViewModel());
             else
@@ -47,7 +48,7 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPatch("{id}")]
-        public IActionResult Update(long id, [FromBody]UserBindingModel postData) {
+        public async Task<IActionResult> Update(long id, [FromBody]UserRequest postData) {
             var user = Db.Users.Find(id);
             if (user == null)
                 return NotFound();
@@ -58,7 +59,7 @@ namespace microblogApi.Controllers {
 
             IdentityResult pwChangeResult = null;
             if (postData.password != null) {
-                pwChangeResult = UserManager.ChangePasswordAsync(user, postData.password).Result;
+                pwChangeResult = await UserManager.ChangePasswordAsync(user, postData.password);
             }
 
             bool pwChangeError = pwChangeResult?.Errors.Any() ?? false;
@@ -99,7 +100,12 @@ namespace microblogApi.Controllers {
         public long id => _user.Id;
     }
 
-    public class UserBindingModel
+    public class AuthenticationRequest {
+        public string email { get; set; }
+        public string password { get; set; }
+    }
+
+    public class UserRequest
     {
         public string username { get; set; }
 
