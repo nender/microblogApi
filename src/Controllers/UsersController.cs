@@ -5,6 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System;
+using Microsoft.Extensions.Configuration;
 
 namespace microblogApi.Controllers {
 
@@ -14,9 +20,11 @@ namespace microblogApi.Controllers {
     public class UsersController : ControllerBase {
         readonly MicropostContext Db;
         readonly MicroblogUserManager UserManager;
-        public UsersController(MicropostContext context, MicroblogUserManager userManager) {
+        readonly IConfiguration Configuration;
+        public UsersController(MicropostContext context, MicroblogUserManager userManager, IConfiguration config) {
             Db = context;
             UserManager = userManager;
+            Configuration = config;
         }
 
         [HttpGet]
@@ -71,6 +79,33 @@ namespace microblogApi.Controllers {
             }
         }
 
+        [HttpPost("/api/authenticate")]
+        public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
+            var user = UserManager.FindByEmailAsync(auth.email).Result;
+            if (user == null)
+                return NotFound("Could not find user with that email");
+
+            var authOk = UserManager.CheckPasswordAsync(user, auth.password).Result;
+            if (!authOk)
+                return BadRequest("Could not verify password");
+
+            var claims = new[] {
+                new Claim(ClaimTypes.Email, auth.email)
+            };
+
+            var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
+            var key = new SymmetricSecurityKey(rawKey);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddYears(1),
+                signingCredentials: creds
+            );
+
+            return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+        }
+
         [HttpDelete("{id}")]
         public IActionResult Destroy(long id) {
             var user = Db.Users.Find(id);
@@ -101,7 +136,10 @@ namespace microblogApi.Controllers {
     }
 
     public class AuthenticationRequest {
+        [Required]
         public string email { get; set; }
+
+        [Required]
         public string password { get; set; }
     }
 
