@@ -12,7 +12,7 @@ using Xunit;
 
 namespace microblogApi.Test.Integration {
     public class UserTests {
-        readonly MicroblogWebApplicationFactory _factory;
+        readonly HttpClient client;
         static Regex idfinder = new Regex(@".*id['""]\s*?:\s*?['""](\d+)");
 
         static StringContent JsonContent(string body)
@@ -21,13 +21,12 @@ namespace microblogApi.Test.Integration {
         string GetFirstId(string str) => idfinder.Match(str).Groups[0].Value;
 
         public UserTests() {
-            _factory = new MicroblogWebApplicationFactory();
+            client = new MicroblogWebApplicationFactory().CreateDefaultClient();
         }
 
         [Fact]
         public async void TestCreateAndDestroyValidUser() {
             var x = new { email = "joe@schmo.net", username = "alibaba", password = "Fo0B@r" };
-            var client = _factory.CreateDefaultClient();
             var response = await client.PostAsJsonAsync("/api/users", x);
             Assert.True(response.IsSuccessStatusCode);
             var id = GetFirstId(await response.Content.ReadAsStringAsync());
@@ -41,7 +40,6 @@ namespace microblogApi.Test.Integration {
         [InlineData("tooeasy")]
         public async void TestCreateUserInvalidPassword(string pw) {
             var x = new { email = "joe@schmo.net", username = "alibaba", password = pw };
-            var client = _factory.CreateDefaultClient();
             var response = await client.PostAsJsonAsync("/api/users", x);
             Assert.False(response.IsSuccessStatusCode);
         }
@@ -52,7 +50,6 @@ namespace microblogApi.Test.Integration {
         [InlineData("notanemail.com")]
         public async void TestCreateUserInvalidEmail(string email) {
             var x = new { email = email, username = "alibaba", password = "Fo0b@r" };
-            var client = _factory.CreateDefaultClient();
             var response = await client.PostAsJsonAsync("/api/users", x);
             Assert.False(response.IsSuccessStatusCode);
         }
@@ -63,7 +60,6 @@ namespace microblogApi.Test.Integration {
         public async void TestUpdateUserValid(string json) {
             var id = UserFixtures.Betty.Id;
             var endpoint = $"/api/users/{id}";
-            var client = _factory.CreateDefaultClient();
 
             var response = await client.PatchAsync(endpoint, JsonContent(json));
             Assert.True(response.IsSuccessStatusCode);
@@ -75,8 +71,16 @@ namespace microblogApi.Test.Integration {
         }
 
         [Fact]
-        public void TestUpdateUserPassword() {
-            throw new NotImplementedException();
+        public async void TestUpdateUserPassword() {
+            var betty = UserFixtures.Betty;
+            var result = await client.PostAsJsonAsync("/authenticate", new {email = betty.Email, password = "Fo0B@r"});
+            Assert.True(result.IsSuccessStatusCode);
+
+            result = await client.PostAsJsonAsync($"/user/{betty.Id}", new { password = "Fo0B@r2"});
+            Assert.True(result.IsSuccessStatusCode);
+
+            result = await client.PostAsJsonAsync("/authenticate", new {email = betty.Email, password = "Fo0B@r2"});
+            Assert.True(result.IsSuccessStatusCode);
         }
 
         [Theory]
@@ -86,14 +90,12 @@ namespace microblogApi.Test.Integration {
         [InlineData("waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaytooooooolooooooooong")]
         public async void TestCreateUserInvalidUsername(string username) {
             var x = new { email = "joe@schmo.net", username = username, password = "Fo0b@r" };
-            var client = _factory.CreateDefaultClient();
             var response = await client.PostAsJsonAsync("/api/users", x);
             Assert.False(response.IsSuccessStatusCode);
         }
 
         [Fact]
         public async void TestUserIndexAndIndividualUser() {
-            var client = _factory.CreateDefaultClient();
             var response = await client.GetAsync("/api/users");
             Assert.True(response.IsSuccessStatusCode);
             var id = GetFirstId(await response.Content.ReadAsStringAsync());
