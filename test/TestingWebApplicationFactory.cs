@@ -2,7 +2,6 @@ using System;
 using System.IO;
 
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,21 +24,23 @@ namespace microblogApi.Test {
 
                 Startup.ConfigureServices(services);
 
-                using (var scope = services.BuildServiceProvider().CreateScope())
-                {
-                    var scopedServices = scope.ServiceProvider;
-                    var db = scopedServices.GetRequiredService<MicropostContext>();
-                    var userMan = scopedServices.GetRequiredService<UserManager<User>>();
+                throw new NotImplementedException();
 
-                    if (File.Exists(testdb))
-                        File.Delete(testdb);
-                    db.Database.EnsureCreated();
-                    foreach (var user in UserFixtures.Users) {
-                        var result = await userMan.CreateAsync(user, "Fo0b@r");
-                        if (!result.Succeeded)
-                            throw new Exception("Couldn't create seed user");
-                    }
-                }
+                //using (var scope = services.BuildServiceProvider().CreateScope())
+                //{
+                //    var scopedServices = scope.ServiceProvider;
+                //    var db = scopedServices.GetRequiredService<MicropostContext>();
+                //    var userMan = scopedServices.GetRequiredService<UserManager<User>>();
+
+                //    if (File.Exists(testdb))
+                //        File.Delete(testdb);
+                //    db.Database.EnsureCreated();
+                //    foreach (var user in UserFixtures.Users) {
+                //        var result = await userMan.CreateAsync(user, "Fo0b@r");
+                //        if (!result.Succeeded)
+                //            throw new Exception("Couldn't create seed user");
+                //    }
+                //}
             });
         }
     }

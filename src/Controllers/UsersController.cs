@@ -2,7 +2,6 @@ using microblogApi.Models;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using System.Security.Claims;
@@ -19,11 +18,9 @@ namespace microblogApi.Controllers {
     [ApiController]
     public class UsersController : ControllerBase {
         readonly MicropostContext Db;
-        readonly MicroblogUserManager UserManager;
         readonly IConfiguration Configuration;
-        public UsersController(MicropostContext context, MicroblogUserManager userManager, IConfiguration config) {
+        public UsersController(MicropostContext context, IConfiguration config) {
             Db = context;
-            UserManager = userManager;
             Configuration = config;
         }
 
@@ -48,11 +45,12 @@ namespace microblogApi.Controllers {
             if (!TryValidateModel(user))
                 return BadRequest(ModelState);
 
-            var result = await UserManager.CreateAsync(user, person.password);
-            if (result.Succeeded)
-                return Created("", user.ToViewModel());
-            else
-                return BadRequest(result.Errors);
+            throw new NotImplementedException();
+            //var result = await UserManager.CreateAsync(user, person.password);
+            //if (result.Succeeded)
+            //    return Created("", user.ToViewModel());
+            //else
+            //    return BadRequest(result.Errors);
         }
 
         [HttpPatch("{id}")]
@@ -65,45 +63,47 @@ namespace microblogApi.Controllers {
             user.Email = postData.email ?? user.Email;
             TryValidateModel(user);
 
-            IdentityResult pwChangeResult = null;
-            if (postData.password != null) {
-                pwChangeResult = await UserManager.ChangePasswordAsync(user, postData.password);
-            }
+            throw new NotImplementedException();
+            //IdentityResult pwChangeResult = null;
+            //if (postData.password != null) {
+            //    pwChangeResult = await UserManager.ChangePasswordAsync(user, postData.password);
+            //}
 
-            bool pwChangeError = pwChangeResult?.Errors.Any() ?? false;
-            if (ModelState.IsValid && !pwChangeError) {
-                Db.SaveChanges();
-                return Ok();
-            } else {
-                return BadRequest(ModelState);
-            }
+            //bool pwChangeError = pwChangeResult?.Errors.Any() ?? false;
+            //if (ModelState.IsValid && !pwChangeError) {
+            //    Db.SaveChanges();
+            //    return Ok();
+            //} else {
+            //    return BadRequest(ModelState);
+            //}
         }
 
         [HttpPost("/api/authenticate")]
         public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
-            var user = UserManager.FindByEmailAsync(auth.email).Result;
-            if (user == null)
-                return NotFound("Could not find user with that email");
+            throw new NotImplementedException();
+            //var user = UserManager.FindByEmailAsync(auth.email).Result;
+            //if (user == null)
+            //    return NotFound("Could not find user with that email");
 
-            var authOk = UserManager.CheckPasswordAsync(user, auth.password).Result;
-            if (!authOk)
-                return BadRequest("Could not verify password");
+            //var authOk = UserManager.CheckPasswordAsync(user, auth.password).Result;
+            //if (!authOk)
+            //    return BadRequest("Could not verify password");
 
-            var claims = new[] {
-                new Claim(ClaimTypes.Email, auth.email)
-            };
+            //var claims = new[] {
+            //    new Claim(ClaimTypes.Email, auth.email)
+            //};
 
-            var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
-            var key = new SymmetricSecurityKey(rawKey);
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            //var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
+            //var key = new SymmetricSecurityKey(rawKey);
+            //var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddYears(1),
-                signingCredentials: creds
-            );
+            //var token = new JwtSecurityToken(
+            //    claims: claims,
+            //    expires: DateTime.Now.AddYears(1),
+            //    signingCredentials: creds
+            //);
 
-            return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+            //return Ok(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
         [HttpDelete("{id}")]
