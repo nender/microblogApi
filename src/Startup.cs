@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using microblogApi.Models;
+using microblogApi.Crypto;
 
 namespace microblogApi
 {
@@ -18,6 +19,8 @@ namespace microblogApi
         public static void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MicropostContext>(opt => opt.UseSqlite("Data Source=data.db"));
+
+            services.AddScoped<PasswordHasher>();
 
             services.AddMvc();
         }

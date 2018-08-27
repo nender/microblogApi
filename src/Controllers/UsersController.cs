@@ -10,6 +10,9 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System;
 using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using microblogApi.Crypto;
 
 namespace microblogApi.Controllers {
 
@@ -19,9 +22,11 @@ namespace microblogApi.Controllers {
     public class UsersController : ControllerBase {
         readonly MicropostContext Db;
         readonly IConfiguration Configuration;
-        public UsersController(MicropostContext context, IConfiguration config) {
+        readonly PasswordHasher PasswordHasher;
+        public UsersController(MicropostContext context, IConfiguration config, PasswordHasher pwHash) {
             Db = context;
             Configuration = config;
+            PasswordHasher = pwHash;
         }
 
         [HttpGet]
@@ -39,43 +44,40 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]CreateUserRequest person) {
-            var user = new User { UserName = person.username, Email = person.email };
+        public IActionResult Create([FromBody]CreateUserRequest person) {
+            var user = new User
+            {
+                UserName = person.username,
+                Email = person.email,
+                PasswordHash = PasswordHasher.HashPassword(person.password)
+            };
 
-            if (!TryValidateModel(user))
+            if (TryValidateModel(user)) {
+                Db.Users.Add(user);
+                Db.SaveChanges();
+                return Ok(user.ToViewModel());
+            } else {
                 return BadRequest(ModelState);
-
-            throw new NotImplementedException();
-            //var result = await UserManager.CreateAsync(user, person.password);
-            //if (result.Succeeded)
-            //    return Created("", user.ToViewModel());
-            //else
-            //    return BadRequest(result.Errors);
+            }
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(long id, [FromBody]UpdateUserRequest postData) {
+        public IActionResult Update(long id, [FromBody]UpdateUserRequest postData) {
             var user = Db.Users.Find(id);
             if (user == null)
                 return NotFound();
 
             user.UserName = postData.username ?? user.UserName;
             user.Email = postData.email ?? user.Email;
+            user.PasswordHash = PasswordHasher.HashPassword(postData.password) ?? user.PasswordHash;
+
             TryValidateModel(user);
-
-            throw new NotImplementedException();
-            //IdentityResult pwChangeResult = null;
-            //if (postData.password != null) {
-            //    pwChangeResult = await UserManager.ChangePasswordAsync(user, postData.password);
-            //}
-
-            //bool pwChangeError = pwChangeResult?.Errors.Any() ?? false;
-            //if (ModelState.IsValid && !pwChangeError) {
-            //    Db.SaveChanges();
-            //    return Ok();
-            //} else {
-            //    return BadRequest(ModelState);
-            //}
+            if (ModelState.IsValid) {
+                Db.SaveChanges();
+                return Ok(user.ToViewModel());
+            } else {
+                return BadRequest(ModelState);
+            }
         }
 
         [HttpPost("/api/authenticate")]
