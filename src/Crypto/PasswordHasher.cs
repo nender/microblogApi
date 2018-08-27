@@ -8,6 +8,9 @@ namespace microblogApi.Crypto {
         readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
 
         public string HashPassword(string password) {
+            if (password == null)
+                return null;
+
             var rawHash = RawHashPassword(
                 password,
                 rng,
@@ -20,10 +23,8 @@ namespace microblogApi.Crypto {
         }
 
         public bool CheckPasword(string hashedPassword, string providedPassword) {
-            if (hashedPassword == null)
-                throw new ArgumentNullException(nameof(hashedPassword));
-            if (providedPassword == null)
-                throw new ArgumentNullException(nameof(providedPassword));
+            if (hashedPassword == null || providedPassword == null)
+                return false;
 
             byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
 

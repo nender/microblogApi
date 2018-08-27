@@ -9,7 +9,7 @@ namespace microblogApi.Test.Data {
             Email = "jim@example.org",
         };
 
-        public static readonly  User Betty = new User {
+        public static readonly User Betty = new User {
             Id = 2,
             UserName = "Betty",
             Email = "queenb@example.org",

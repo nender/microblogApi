@@ -6,7 +6,8 @@ namespace microblogApi.Models {
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             modelBuilder.Entity<User>()
-                        .HasIndex(p => p.Email);
+                        .HasIndex(p => p.Email)
+                        .IsUnique();
         }
 
         public DbSet<User> Users { get; set; }

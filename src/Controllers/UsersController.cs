@@ -82,30 +82,26 @@ namespace microblogApi.Controllers {
 
         [HttpPost("/api/authenticate")]
         public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
-            throw new NotImplementedException();
-            //var user = UserManager.FindByEmailAsync(auth.email).Result;
-            //if (user == null)
-            //    return NotFound("Could not find user with that email");
+            var user = Db.Users.Where(x => x.Email == auth.email).FirstOrDefault();
+            var authOk = PasswordHasher.CheckPasword(user?.PasswordHash, auth.password);
+            if (!authOk)
+                return BadRequest("Could not verify password");
 
-            //var authOk = UserManager.CheckPasswordAsync(user, auth.password).Result;
-            //if (!authOk)
-            //    return BadRequest("Could not verify password");
+            var claims = new[] {
+                new Claim(ClaimTypes.Email, auth.email)
+            };
 
-            //var claims = new[] {
-            //    new Claim(ClaimTypes.Email, auth.email)
-            //};
+            var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
+            var key = new SymmetricSecurityKey(rawKey);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            //var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
-            //var key = new SymmetricSecurityKey(rawKey);
-            //var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddYears(1),
+                signingCredentials: creds
+            );
 
-            //var token = new JwtSecurityToken(
-            //    claims: claims,
-            //    expires: DateTime.Now.AddYears(1),
-            //    signingCredentials: creds
-            //);
-
-            //return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+            return Ok(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
         [HttpDelete("{id}")]
