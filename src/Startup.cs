@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using microblogApi.Models;
 using microblogApi.Crypto;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace microblogApi
 {
@@ -21,6 +23,7 @@ namespace microblogApi
             services.AddDbContext<MicropostContext>(opt => opt.UseSqlite("Data Source=data.db"));
 
             services.AddScoped<PasswordHasher>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 
             services.AddMvc();
         }
@@ -33,6 +36,7 @@ namespace microblogApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseAuthentication();
             app.UseMvc();
 
             app.Run(async (context) =>

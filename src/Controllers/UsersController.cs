@@ -13,12 +13,14 @@ using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using microblogApi.Crypto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace microblogApi.Controllers {
 
     [Produces("application/json")]
     [Route("/api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase {
         readonly MicropostContext Db;
         readonly IConfiguration Configuration;
@@ -80,6 +82,7 @@ namespace microblogApi.Controllers {
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("/api/authenticate")]
         public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
             var user = Db.Users.Where(x => x.Email == auth.email).FirstOrDefault();
