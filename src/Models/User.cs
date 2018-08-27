@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace microblogApi.Models {
     public partial class User {
+        [Key]
         public long Id { get; set; }
 
         [Required]
@@ -11,5 +12,8 @@ namespace microblogApi.Models {
         [Required]
         [StringLength(50, MinimumLength = 5)]
         public string UserName { get; set; }
+
+        [Required]
+        public string PasswordHash { get; set; }
     }
 }
