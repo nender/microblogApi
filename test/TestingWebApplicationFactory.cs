@@ -21,9 +21,6 @@ namespace microblogApi.Test {
             builder.ConfigureServices(async services =>
             {
                 const string testdb = "test.db";
-                if (File.Exists(testdb))
-                    File.Delete(testdb);
-
                 services.AddDbContext<MicropostContext>(opt => opt.UseSqlite($"Data Source={testdb}"));
 
                 Startup.ConfigureServices(services);
@@ -34,7 +31,8 @@ namespace microblogApi.Test {
                     var db = scopedServices.GetRequiredService<MicropostContext>();
                     var userMan = scopedServices.GetRequiredService<UserManager<User>>();
 
-                    // Ensure the database is created.
+                    if (File.Exists(testdb))
+                        File.Delete(testdb);
                     db.Database.EnsureCreated();
                     foreach (var user in UserFixtures.Users) {
                         var result = await userMan.CreateAsync(user, "Fo0b@r");
