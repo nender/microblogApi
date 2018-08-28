@@ -25,9 +25,6 @@ namespace microblogApi.Test {
                 const string testdb = "test.db";
                 services.AddDbContext<MicropostContext>(opt => opt.UseSqlite($"Data Source={testdb}"));
 
-                // randomly generate a new signing key
-                Startup.CustomConfigureServices(services, new HMACSHA256().Key);
-
                 using (var scope = services.BuildServiceProvider().CreateScope()) {
                     var scopedServices = scope.ServiceProvider;
                     var db = scopedServices.GetRequiredService<MicropostContext>();

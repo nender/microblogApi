@@ -67,7 +67,7 @@ namespace microblogApi.Controllers {
         [HttpPatch("{id}")]
         public IActionResult Update(long id, [FromBody]UpdateUserRequest postData) {
             var user = Db.Users.Find(id);
-            bool authorized = User.HasClaim(c => c.Type == "email" && c.Value == user.Email);
+            bool authorized = User.HasClaim(c => c.Type == ClaimTypes.Email && c.Value == user.Email);
             if (!authorized)
                 return Unauthorized();
 
@@ -93,7 +93,7 @@ namespace microblogApi.Controllers {
                 return BadRequest("Could not verify password");
 
             var claims = new[] {
-                new Claim("email", auth.email)
+                new Claim(ClaimTypes.Email, auth.email)
             };
 
             var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
@@ -106,13 +106,15 @@ namespace microblogApi.Controllers {
                 signingCredentials: creds
             );
 
-            return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+            var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return Ok(tokenStr);
         }
 
         [HttpDelete("{id}")]
         public IActionResult Destroy(long id) {
             var user = Db.Users.Find(id);
-            bool authorized = User.HasClaim(c => c.Type == "email" && c.Value == user.Email);
+            bool authorized = User.HasClaim(c => c.Type == ClaimTypes.Email && c.Value == user.Email);
             if (!authorized)
                 return Unauthorized();
             
