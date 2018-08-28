@@ -46,6 +46,7 @@ namespace microblogApi.Controllers {
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult Create([FromBody]CreateUserRequest person) {
             var user = new User
             {
@@ -66,8 +67,9 @@ namespace microblogApi.Controllers {
         [HttpPatch("{id}")]
         public IActionResult Update(long id, [FromBody]UpdateUserRequest postData) {
             var user = Db.Users.Find(id);
-            if (user == null)
-                return NotFound();
+            bool authorized = User.HasClaim(c => c.Type == "email" && c.Value == user.Email);
+            if (!authorized)
+                return Unauthorized();
 
             user.UserName = postData.username ?? user.UserName;
             user.Email = postData.email ?? user.Email;
@@ -82,8 +84,8 @@ namespace microblogApi.Controllers {
             }
         }
 
-        [AllowAnonymous]
         [HttpPost("/api/authenticate")]
+        [AllowAnonymous]
         public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
             var user = Db.Users.Where(x => x.Email == auth.email).FirstOrDefault();
             var authOk = PasswordHasher.CheckPasword(user?.PasswordHash, auth.password);
@@ -91,7 +93,7 @@ namespace microblogApi.Controllers {
                 return BadRequest("Could not verify password");
 
             var claims = new[] {
-                new Claim(ClaimTypes.Email, auth.email)
+                new Claim("email", auth.email)
             };
 
             var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
@@ -110,8 +112,9 @@ namespace microblogApi.Controllers {
         [HttpDelete("{id}")]
         public IActionResult Destroy(long id) {
             var user = Db.Users.Find(id);
-            if (user == null)
-                return BadRequest("No such user");
+            bool authorized = User.HasClaim(c => c.Type == "email" && c.Value == user.Email);
+            if (!authorized)
+                return Unauthorized();
             
             Db.Users.Remove(user);
             Db.SaveChanges();
