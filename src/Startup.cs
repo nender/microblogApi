@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,21 +11,42 @@ using microblogApi.Models;
 using microblogApi.Crypto;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace microblogApi
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public static void ConfigureServices(IServiceCollection services)
+        readonly IConfiguration Configuration;
+        public Startup(IConfiguration config) {
+            Configuration = config;
+        }
+
+        public static void CustomConfigureServices(IServiceCollection services, byte[] tokenKey)
         {
             services.AddDbContext<MicropostContext>(opt => opt.UseSqlite("Data Source=data.db"));
 
             services.AddScoped<PasswordHasher>();
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(tokenKey)
+                    };
+                });
 
             services.AddMvc();
+        }
+
+        public void ConfigureServices(IServiceCollection services) {
+            var key = Convert.FromBase64String(Configuration["SecretKey"]);
+            CustomConfigureServices(services, key);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,11 +59,6 @@ namespace microblogApi
 
             app.UseAuthentication();
             app.UseMvc();
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
         }
     }
 }

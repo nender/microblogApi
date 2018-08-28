@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using microblogApi.Models;
 using microblogApi.Test.Data;
 using microblogApi.Crypto;
+using System.Security.Cryptography;
 
 namespace microblogApi.Test {
     public class MicroblogWebApplicationFactory : WebApplicationFactory<Startup>
@@ -24,7 +25,8 @@ namespace microblogApi.Test {
                 const string testdb = "test.db";
                 services.AddDbContext<MicropostContext>(opt => opt.UseSqlite($"Data Source={testdb}"));
 
-                Startup.ConfigureServices(services);
+                // randomly generate a new signing key
+                Startup.CustomConfigureServices(services, new HMACSHA256().Key);
 
                 using (var scope = services.BuildServiceProvider().CreateScope()) {
                     var scopedServices = scope.ServiceProvider;
