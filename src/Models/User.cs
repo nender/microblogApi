@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace microblogApi.Models {
@@ -15,5 +16,7 @@ namespace microblogApi.Models {
 
         [Required]
         public string PasswordHash { get; set; }
+
+        public List<Micropost> Microposts { get; set; }
     }
 }

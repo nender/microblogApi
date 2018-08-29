@@ -11,5 +11,6 @@ namespace microblogApi.Models {
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Micropost> Microposts { get; set; }
     }
 }
