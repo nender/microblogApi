@@ -1,21 +1,16 @@
-using microblogApi.Models;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using System;
-using Microsoft.Extensions.Configuration;
-using System.Security.Cryptography;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using microblogApi.Crypto;
-using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Security.Claims;
 
-namespace microblogApi.Controllers {
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using microblogApi.Crypto;
+using microblogApi.Models;
+
+namespace microblogApi.Controllers
+{
 
     [Produces("application/json")]
     [Route("/api/[controller]")]
@@ -23,11 +18,9 @@ namespace microblogApi.Controllers {
     [Authorize]
     public class UsersController : ControllerBase {
         readonly MicropostContext Db;
-        readonly IConfiguration Configuration;
         readonly PasswordHasher PasswordHasher;
-        public UsersController(MicropostContext context, IConfiguration config, PasswordHasher pwHash) {
+        public UsersController(MicropostContext context, PasswordHasher pwHash) {
             Db = context;
-            Configuration = config;
             PasswordHasher = pwHash;
         }
 
@@ -82,33 +75,6 @@ namespace microblogApi.Controllers {
             } else {
                 return BadRequest(ModelState);
             }
-        }
-
-        [HttpPost("/api/authenticate")]
-        [AllowAnonymous]
-        public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
-            var user = Db.Users.Where(x => x.Email == auth.email).FirstOrDefault();
-            var authOk = PasswordHasher.CheckPasword(user?.PasswordHash, auth.password);
-            if (!authOk)
-                return BadRequest("Could not verify password");
-
-            var claims = new[] {
-                new Claim(ClaimTypes.Email, auth.email)
-            };
-
-            var rawKey = Convert.FromBase64String(Configuration["SecretKey"]);
-            var key = new SymmetricSecurityKey(rawKey);
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddYears(1),
-                signingCredentials: creds
-            );
-
-            var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return Ok(tokenStr);
         }
 
         [HttpDelete("{id}")]
