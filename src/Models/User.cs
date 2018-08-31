@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace microblogApi.Models {
-    public partial class User {
+    public partial class User : ITimestamps {
         [Key]
         public long Id { get; set; }
 
@@ -18,5 +19,8 @@ namespace microblogApi.Models {
         public string PasswordHash { get; set; }
 
         public List<Micropost> Microposts { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

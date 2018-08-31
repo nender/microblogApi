@@ -139,6 +139,9 @@ namespace microblogApi.Controllers {
         public string username => _user.UserName;
         public string email => _user.Email;
         public long id => _user.Id;
+
+        public DateTime createdAt => _user.CreatedAt;
+        public DateTime updatedAt => _user.UpdatedAt;
     }
 
     public class AuthenticationRequest {
