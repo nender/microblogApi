@@ -9,8 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using microblogApi.Crypto;
 using microblogApi.Models;
 
-namespace microblogApi.Controllers
-{
+namespace microblogApi.Controllers {
 
     [Produces("application/json")]
     [Route("/api/[controller]")]

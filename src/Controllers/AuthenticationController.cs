@@ -29,7 +29,7 @@ namespace microblogApi.Controllers {
 
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody]AuthenticationRequest auth) {
-            var user = Db.Users.Where(x => x.Email == auth.email).FirstOrDefault();
+            var user = Db.Users.Single(x => x.Email == auth.email);
             var authOk = PasswordHasher.CheckPasword(user?.PasswordHash, auth.password);
             if (!authOk)
                 return BadRequest("Could not verify password");
@@ -44,7 +44,7 @@ namespace microblogApi.Controllers {
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddYears(1),
+                expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds
             );
 

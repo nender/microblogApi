@@ -81,7 +81,7 @@ namespace microblogApi.Test.Integration {
 
             var change = JObject.Parse(json).Properties().First();
             var result = JObject.Parse(await response.Content.ReadAsStringAsync());
-            Assert.True(result.Property(change.Name).Value.ToString() == (string)change.Value);
+            Assert.Equal(result.Property(change.Name).Value.ToString(), (string)change.Value);
         }
 
         [Fact]

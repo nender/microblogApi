@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace microblogApi.Crypto {
     public class PasswordHasher {
-        readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
+        private readonly RandomNumberGenerator rng = RandomNumberGenerator.Create();
 
         public string HashPassword(string password) {
             if (password == null)
